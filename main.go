@@ -46,7 +46,6 @@ func compareFile(file string) {
 			src_line, err := readLine(src_r)
 			dst_line, _ := readLine(dst_r)
 			if err == io.EOF {
-				log.Fatal("all done")
 				break
 			}
 			if err != nil {
