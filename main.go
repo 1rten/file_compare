@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 	"github.com/gookit/color"
@@ -30,10 +29,15 @@ func compareFile(file string) {
 	if strings.HasSuffix(file, f_type) {
 		src_path := fmt.Sprintf("%s/%s", src, file)
 		dst_path := fmt.Sprintf("%s/%s", dst, file)
-		src_f, err := os.Open(src_path)
-		dst_f, _ := os.Open(dst_path)
-		if err != nil {
-			log.Fatal(err)
+		src_f, err_src := os.Open(src_path)
+		dst_f, err_dst := os.Open(dst_path)
+		if err_src != nil {
+			color.Error.Println(err_src)
+			return
+		}
+		if err_dst != nil {
+			color.Error.Println(err_dst)
+			return
 		}
 		defer src_f.Close()
 		defer dst_f.Close()
@@ -49,7 +53,8 @@ func compareFile(file string) {
 				break
 			}
 			if err != nil {
-				log.Fatal(err)
+				color.Error.Println(err)
+				return
 			}
 			if src_line != dst_line && line != 1 {
 				color.Warn.Println(fmt.Sprintf("LINE:%d {%s}", line, dst_line))
@@ -82,8 +87,10 @@ func main() {
 	}
 	files, err := ioutil.ReadDir(src)
 	if err != nil {
-		log.Fatal(err)
+		color.Error.Println(err)
+		return
 	}
+
 	for _, f := range files {
 		if f.IsDir() {
 			continue
