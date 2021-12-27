@@ -25,42 +25,38 @@ func isFlagPassed(name string) bool {
 	return found
 }
 
-func compareFile(file string) {
-	if strings.HasSuffix(file, f_type) {
-		src_path := fmt.Sprintf("%s/%s", src, file)
-		dst_path := fmt.Sprintf("%s/%s", dst, file)
-		src_f, err_src := os.Open(src_path)
-		dst_f, err_dst := os.Open(dst_path)
-		if err_src != nil {
-			color.Error.Println(err_src)
-			return
-		}
-		if err_dst != nil {
-			color.Error.Println(err_dst)
-			return
-		}
-		defer src_f.Close()
-		defer dst_f.Close()
-		src_r := bufio.NewReader(src_f)
-		dst_r := bufio.NewReader(dst_f)
-		color.Info.Println(fmt.Sprintf("[%s] COMPARE [%s]", src_path, dst_path))
-		line := 0
-		for {
-			line++
-			src_line, err := readLine(src_r)
-			dst_line, _ := readLine(dst_r)
-			if err == io.EOF {
-				break
-			}
-			if err != nil {
-				color.Error.Println(err)
-				return
-			}
-			if src_line != dst_line && line != 1 {
-				color.Warn.Println(fmt.Sprintf("LINE:%d {%s}", line, dst_line))
-			}
-		}
+func compareFile(src_path string, dst_path string) {
+	src_f, err_src := os.Open(src_path)
+	dst_f, err_dst := os.Open(dst_path)
+	if err_src != nil {
+		color.Error.Println(err_src)
+		return
 	}
+	if err_dst != nil {
+		color.Error.Println(err_dst)
+		return
+	}
+	defer src_f.Close()
+	defer dst_f.Close()
+	src_r := bufio.NewReader(src_f)
+	dst_r := bufio.NewReader(dst_f)
+	color.Info.Println(fmt.Sprintf("[%s] COMPARE [%s]", src_path, dst_path))
+	line := 0
+	for {
+		line++
+		src_line, err := readLine(src_r)
+		dst_line, _ := readLine(dst_r)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			color.Error.Println(err)
+			return
+		}
+		if src_line != dst_line && line != 1 {
+			color.Warn.Println(fmt.Sprintf("LINE:%d {%s}", line, dst_line))
+		}
+	}	
 }
 
 func readLine(r *bufio.Reader) (string, error) {
@@ -90,11 +86,14 @@ func main() {
 		color.Error.Println(err)
 		return
 	}
-
 	for _, f := range files {
 		if f.IsDir() {
 			continue
 		}
-		compareFile(f.Name())
+		if strings.HasSuffix(f.Name(), f_type) {
+			src_path := fmt.Sprintf("%s/%s", src, f.Name())
+			dst_path := fmt.Sprintf("%s/%s", dst, f.Name())
+			compareFile(src_path, dst_path)
+		}
 	}
 }
